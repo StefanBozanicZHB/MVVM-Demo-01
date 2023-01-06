@@ -1,17 +1,17 @@
 package com.example.mvvmdemo01
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mvvmdemo01.databinding.ActivityMainBinding
+import com.example.mvvmdemo01.db.Subscriber
 import com.example.mvvmdemo01.db.SubscriberDatabase
 import com.example.mvvmdemo01.db.SubscriberRepository
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding : ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
     private lateinit var subscriberViewModel: SubscriberViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,12 +23,24 @@ class MainActivity : AppCompatActivity() {
         subscriberViewModel = ViewModelProvider(this, factory)[SubscriberViewModel::class.java]
         binding.myViewModel = subscriberViewModel
         binding.lifecycleOwner = this
-        displaySubscribersList()
+        initRecyclerView()
     }
 
-    private fun displaySubscribersList(){
-        subscriberViewModel.subscribers.observe(this, Observer {
-            Log.i("myTag", it.toString())
-        })
+    private fun initRecyclerView() {
+        binding.subscriberRecyclerView.layoutManager = LinearLayoutManager(this)
+        displaySubscribersList()
+
+    }
+
+    private fun displaySubscribersList() {
+        subscriberViewModel.subscribers.observe(this) {
+            binding.subscriberRecyclerView.adapter = MyRecyclerViewAdapter(
+                it
+            ) { selectedItem: Subscriber -> listItemClicked(selectedItem) }
+        }
+    }
+
+    private fun listItemClicked(subscriber: Subscriber) {
+        subscriberViewModel.initUpdateAndDelete(subscriber)
     }
 }
